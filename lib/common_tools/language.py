@@ -725,8 +725,11 @@ Default filter rule:  {baseClass.漫游预设.默认过滤规则}
     配置表操作:str=rosetta("配置表操作")
     重置配置表:str=翻译("重置配置表","reset configuration")
     创建为视图:str=翻译("创建为视图","save as new view")
-
-
+    zotero链接key:str=翻译("zotero链接key","zotero link key")
+    zotero链接名称:str=翻译("zotero链接名称","zotero link name")
+    zotero默认链接名称:str=翻译("这是一个zotero链接","this is a zotero link")
+    设置zotero默认链接名:str=翻译("设置zotero默认链接名","set zotero default link name")
+    zotero链接已获取_请ctrl_v粘贴:str=翻译("zotero链接已获取_请ctrl_v粘贴","zotero link key is obtained, please ctrl_v paste it")
     视图命名规则:str=rosetta("视图名不能有空白字符,不能有连续4个':',即'::::'非法")
     视图名必须是JSON合法的字符串:str=rosetta("视图名必须是JSON合法的字符串")
     打开于视图:str=rosetta("打开于视图")
@@ -772,6 +775,7 @@ Default filter rule:  {baseClass.漫游预设.默认过滤规则}
     插入到已打开视图:str=rosetta("插入到已打开视图")
     修改描述:str=rosetta("修改描述")
     插入pdf链接:str=rosetta("插入pdf链接")
+    插入zotero链接:str=翻译("插入zotero链接","insert zotero link")
     pdf链接:str=rosetta("pdf链接")
     pdf路径:str=rosetta("pdf路径")
     pdf页码:str=rosetta("pdf页码")

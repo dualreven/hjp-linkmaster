@@ -18,6 +18,48 @@ class 组件定制:
         对话框.resize(*尺寸)
         对话框.exec()
         pass
+    class 类_按钮群(QWidget):
+        def __init__(self,布局方向="横向", 字典型_按钮参数: "Dict[str,QWidget]|None" = None):
+            super().__init__()
+            self._子组件字典: Dict[str, QWidget] = {}
+            self._按钮群布局 = QHBoxLayout(self) if 布局方向 == "横向" else QVBoxLayout(self)
+            if 字典型_按钮参数 is not None:
+                self.从字典创建按钮群(字典型_按钮参数)
+        def __setitem__(self, 组件名: str, 组件对象: QWidget):
+            self._子组件字典[组件名] = 组件对象
+            self._按钮群布局.addWidget(组件对象)
+
+        # 可以用魔术方法从下标访问表单内的项
+        def __getitem__(self, 组件名: str):
+            return self._子组件字典[组件名]
+
+        def 从字典创建按钮群(self, 字典型_表单参数: Dict[str, QWidget]):
+            for key, value in 字典型_表单参数.items():
+                self[key] = value
+            pass
+        pass
+    class 类_表单组件(QWidget):
+        # 使用方式:
+        def __init__(self, 字典型_表单参数: "Dict[str,QWidget]|None" = None):
+            super().__init__()
+            self._子组件字典: Dict[str, QWidget] = {}
+            self._表单布局 = QFormLayout(self)
+            if 字典型_表单参数 is not None:
+                self.从字典创建表单(字典型_表单参数)
+
+        # 可以使用魔术方法从下标设置表单内的项
+        def __setitem__(self, 组件名: str, 组件对象: QWidget):
+            self._子组件字典[组件名] = 组件对象
+            self._表单布局.addRow(组件名, 组件对象)
+
+        # 可以用魔术方法从下标访问表单内的项
+        def __getitem__(self, 组件名: str):
+            return self._子组件字典[组件名]
+
+        def 从字典创建表单(self, 字典型_表单参数: Dict[str, QWidget]):
+            for key, value in 字典型_表单参数.items():
+                self[key] = value
+            pass
 
     class 表格_单行行编辑组件:
         def __init__(self,单行组件:QWidget):
@@ -88,10 +130,12 @@ class 组件定制:
         return 组件
 
     @staticmethod
-    def 单行输入框(占位符=None):
+    def 单行输入框(占位符=None,默认值=None):
         组件 = QLineEdit()
         if 占位符:
             组件.setPlaceholderText(占位符)
+        if 默认值:
+            组件.setText(默认值)
         return 组件
 
     @staticmethod
@@ -168,6 +212,7 @@ class 组件定制:
     def 按钮_确认(文字="", 图标地址=None, 触发函数=None):
         图标地址 = 图标地址 if 图标地址 else G.src.ImgDir.correct
         return 组件定制.按钮(图标地址, 文字, 触发函数)
+
     class TableView(QTableView):
         def __init__(self, itemIsmovable=False, editable=False, itemIsselectable=False, title_name=""):
             super().__init__()

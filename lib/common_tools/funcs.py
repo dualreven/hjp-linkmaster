@@ -234,6 +234,37 @@ class EditorOperation:
         if dialog.needpaste: editor.onPaste()
         return text
 
+    @staticmethod
+    def make_zoterolink(editor: "Editor"):
+        clipboard = QApplication.clipboard()
+        text = clipboard.text()
+        组件工具 = widgets.组件定制
+        表单参数:dict[str,QLineEdit] = {
+            Translate.zotero链接key:组件工具.单行输入框(默认值=text),
+            Translate.zotero链接名称:组件工具.单行输入框(默认值=译.zotero默认链接名称)
+        }
+
+        def 确定触发():
+            名称 = 表单参数[译.zotero链接名称].text()
+            键值 = 表单参数[译.zotero链接key].text()
+            链接文本 = f"""<a href="zotero://select/library/items/@{键值}">{名称}</a>"""
+            多媒体数据 = QMimeData()
+            多媒体数据.setHtml(链接文本)
+            clipboard.setMimeData(多媒体数据)
+            tooltip(译.zotero链接已获取_请ctrl_v粘贴)
+            对话框.close()
+
+        按钮参数 = {
+            译.设置zotero默认链接名:组件工具.按钮(文本=译.设置zotero默认链接名, 触发函数=lambda: 表单参数[译.zotero链接名称].setText(译.zotero默认链接名称)),
+            Translate.确定:组件工具.按钮(文本=Translate.确定, 触发函数=确定触发),
+        }
+        表单 = 组件工具.类_表单组件(字典型_表单参数=表单参数)
+        按钮组 = 组件工具.类_按钮群(字典型_按钮参数=按钮参数)
+        组件树 = {布局:QVBoxLayout(),子代: [{组件:表单}, {组件:按钮组}]}
+
+        对话框 = 组件工具.组件组合(组件树,组件工具.对话窗口(标题="zotero link maker"))
+        对话框.exec()
+
 
 class CustomProtocol:
     # 自定义url协议,其他的都是固定的,需要获取anki的安装路径

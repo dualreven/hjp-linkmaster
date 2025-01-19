@@ -240,18 +240,28 @@ def make__tag_operation(atype, pairsli_admin: "PairsLiAdmin", *args, **kwargs):
     pass
 
 
-def make__insert_PDFlink(atype, pairsli_admin: "PairsLiAdmin", *args, **kwargs):
-    """用来在编辑器中插入PDF链接时可以更快捷地修改数据"""
+# def make__insert_PDFlink(atype, pairsli_admin: "PairsLiAdmin", *args, **kwargs):
+#     """用来在编辑器中插入PDF链接时可以更快捷地修改数据"""
+#     if atype in {T.editor_context}:
+#         prefix = kwargs["prefix"]
+#         editor: "EditorWebView" = args[0]
+#         # tooltip(str(editor.editor.currentField))
+#         if editor.editor.currentField is None:
+#             return
+#         M: "QMenu" = args[1]
+#         make_PDFlink = M.addAction(Translate.插入pdf链接)
+#         make_PDFlink.triggered.connect(lambda: common_tools.funcs.EditorOperation.make_PDFlink(editor))
+
+def make__插入_zoteroLink(atype, pairsli_admin: "PairsLiAdmin", *args, **kwargs):
     if atype in {T.editor_context}:
         prefix = kwargs["prefix"]
         editor: "EditorWebView" = args[0]
-        # tooltip(str(editor.editor.currentField))
         if editor.editor.currentField is None:
             return
         M: "QMenu" = args[1]
-        make_PDFlink = M.addAction(Translate.插入pdf链接)
-        make_PDFlink.triggered.connect(lambda: common_tools.funcs.EditorOperation.make_PDFlink(editor))
-
+        make_PDFlink = M.addAction(Translate.插入zotero链接)
+        make_PDFlink.triggered.connect(lambda: common_tools.funcs.EditorOperation.make_zoterolink(editor))
+        pass
 
 def make__other(atype, pairsli_admin: "PairsLiAdmin", *args, **kwargs):
     if atype in {T.browser}:

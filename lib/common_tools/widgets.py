@@ -182,6 +182,7 @@ class SupportDialog(QDialog):
 
 
 
+
 class Dialog_PDFUrlTool(QDialog):
 
     def __init__(self):

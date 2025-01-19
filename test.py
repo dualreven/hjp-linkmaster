@@ -7,7 +7,7 @@ __email__ = '564298339@qq.com'
 __time__ = '2023/3/16 1:23'
 """
 
-import json , os, sys
+import json , os, sys,sqlite3
 dev_metaJson = "./meta.json"
 local_metaJson = "../hjp_linkmaster/meta.json"
 is_win = sys.platform.startswith("win32")
@@ -28,9 +28,7 @@ def start_local():
     modify_meta(local_metaJson)
 
 
+
 if __name__ == "__main__":
-    if is_win:
-        # start_local()
-        start_dev()
-        os.system(r"anki")
+    print(sqlite3.sqlite_version)
     pass
