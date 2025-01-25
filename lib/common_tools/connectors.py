@@ -32,6 +32,8 @@ from . import events
 from .language import Translate
 from .configsModel import AnswerInfoInterface
 
+# def add_postpone_button(reviewer: Reviewer):
+#     # 创建按钮并绑定动作
 
 def run():
     # thisDist = funcs.G.installAs.local if funcs.G.src.ADDON_VERSION[-1]=="l" else funcs.G.installAs.ankiweb
@@ -70,11 +72,21 @@ def run():
     gui_hooks.reviewer_did_answer_card.append(lambda x, y, z: signals.on_card_answerd.emit(
             AnswerInfoInterface(platform=x, card_id=y.id, option_num=z)
     ))
+
+    # 卡片延后
+    reviewer.Reviewer._answerButtons = funcs.MonkeyPatch.Reviewer_answerButtons(reviewer.Reviewer._answerButtons) # 添加按钮
+    gui_hooks.reviewer_did_init.append(funcs.MainWinOperation.当_reviewer加载完成) # 猴子补丁
+    gui_hooks.state_did_change.append(funcs.MainWinOperation.当_窗口状态改变) # 加载复习队列
+    gui_hooks.reviewer_did_answer_card.append(lambda a, b,c: funcs.ReviewerOperation.将复习队列中的队首卡片出队()) # 卡片出队
+
+
+
     # signals.on_card_changed.connect(funcs.GroupReview.modified_card_record)
     hooks.note_will_flush.append(lambda x: signals.on_card_changed.emit(x))  # 能检查到更改field,tag,deck,只要显示了都会检测到
     hooks.notes_will_be_deleted.append(
             lambda col, nids :funcs.CardOperation.删除不存在的结点([mw.col.get_note(nid).card_ids()[0].__str__() for nid in nids ])
     )
+
     # gui_hooks.collection_did_load.append(lambda x: funcs.GroupReview.begin())
     # signals.on_group_review_search_string_changed.connect(funcs.GroupReview.build)
 
@@ -84,7 +96,9 @@ def run():
     # reviewer.Reviewer._showEaseButtons = funcs.MonkeyPatch.Reviewer_showEaseButtons(reviewer.Reviewer._showEaseButtons)
     # reviewer.Reviewer.nextCard = funcs.MonkeyPatch.Reviewer_nextCard(reviewer.Reviewer.nextCard)
     addcards.AddCards.closeEvent = funcs.MonkeyPatch.AddCards_closeEvent(addcards.AddCards.closeEvent)
+
     setupAnkiLinkProtocol()
+    # gui_hooks.reviewer_will_show_context_menu.append(add_postpone_button)
 
 
 def test(*args, **kwargs):

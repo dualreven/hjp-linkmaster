@@ -34,6 +34,7 @@ class SrcAdmin:
             openbrowser_search="openbrowser_search"
             opencard="opencard_id"
             open="open"
+            moveToEnd= "moveToEnd"
 
         @dataclasses.dataclass
         class Key:

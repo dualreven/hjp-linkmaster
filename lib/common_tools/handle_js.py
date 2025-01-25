@@ -10,14 +10,14 @@ from aqt.browser.previewer import BrowserPreviewer
 from aqt.editor import Editor
 from aqt.reviewer import Reviewer
 from aqt.utils import showInfo, tooltip
-
+from anki.scheduler.v3 import QueuedCards
 from . import funcs, terms
 
-CardId = funcs.Compatible.CardId()
+
 from .compatible_import import *
-译 = funcs.译
+
 # print, _ = clipper_imports.funcs.logger(__name__)
-ankilink = funcs.G.src.ankilink
+
 
 #
 # def find_card_from_context(context):
@@ -33,7 +33,11 @@ ankilink = funcs.G.src.ankilink
 
 def on_js_message(handled, url: str, context):
     """onAppMsgWrapper 这个函数也控制一些读取, 这里搞不懂的去那看看"""
+    CardId = funcs.Compatible.CardId()
+    ankilink = funcs.G.src.ankilink
+    译 = funcs.译
     if url.startswith("hjp-bilink-cid:"):
+
         cid: "CardId" = CardId(int(url.split(":")[-1]))
 
         if funcs.CardOperation.exists(cid):
@@ -79,6 +83,12 @@ def on_js_message(handled, url: str, context):
         elif url.startswith(f"{ankilink.protocol}://{ankilink.Cmd.open}?{ankilink.Key.browser_search}="):
             searchstring = unquote(url.split("=")[-1])
             funcs.BrowserOperation.search(searchstring).activateWindow()
+        elif url.startswith(f"{ankilink.protocol}://{ankilink.Cmd.moveToEnd}?{ankilink.Key.card}="):
+            card_id = CardId(int(url[-13:]))
+            tooltip(f"{card_id} postponed")
+            # funcs.ReviewerOperation.将卡片暂停(card_id)
+            funcs.ReviewerOperation.将复习队列中的队首卡片移动到队尾()
+
         else:
             showInfo("未知指令/unknown command:<br>" + url)
     elif url.startswith("file:/"):

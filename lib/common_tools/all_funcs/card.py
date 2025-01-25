@@ -1,3 +1,5 @@
+from anki.scheduler.v3 import CardAnswer
+
 from .basic_funcs import *
 
 
@@ -101,13 +103,17 @@ class CardOperation:
         pass
 
     @staticmethod
-    def answer_card(card, ease):
+    def answer_card(card, ease,answer_builder:"CardAnswer|None"=None):
         sched = mw.col.sched
         count = 10
         for i in range(count):
             Utils.print(f"try answer_card time={i}")
             try:
-                sched.answerCard(card, ease)
+                # sched.answerCard(card, ease)
+                if answer_builder is None:
+                    states = mw.col._backend.get_scheduling_states(card.id)
+                    answer_builder:CardAnswer= sched.build_answer(card=card,states=states,rating=ease)
+                sched.answer_card(answer_builder)
                 break
             except:
                 time.sleep(0.2)

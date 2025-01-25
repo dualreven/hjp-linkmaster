@@ -22,6 +22,7 @@ from .all_funcs.Dialogs import Dialogs
 from .all_funcs.card import CardOperation
 from .all_funcs.browser import BrowserOperation
 from .all_funcs.link import GlobalLinkDataOperation
+from .all_funcs.mainwin import MainWinOperation
 from .all_widgets.widget_funcs import *
 from .all_funcs.basic_funcs import *
 import html as htmlLib
@@ -207,7 +208,39 @@ class ReviewerOperation:
     @staticmethod
     def refresh():
         pass
+    @staticmethod
+    def 将卡片暂停(card_id:"CardId"):
+        card = mw.col.get_card(card_id)
+        card.queue = -1 # suspend
+        mw.col.update_card(card)
 
+    @staticmethod
+    def 将卡片从暂停中恢复(card_id:"CardId"):
+        card = mw.col.get_card(card_id)
+        card.queue = card.type  # suspend
+        mw.col.update_card(card)
+
+    @staticmethod
+    def 将复习队列中的队首卡片移动到队尾():
+        插件全局变量: G.插件全局变量 = mw.__dict__[G.addonName]
+        复习队列: QueuedCards = 插件全局变量["复习队列"]
+        队首卡片 = 复习队列.cards.pop(0)
+        复习队列.cards.append(队首卡片)
+        mw.reviewer.nextCard()
+        tooltip("将复习队列中的队首卡片移动到队尾")
+
+    @staticmethod
+    def 将复习队列中的队首卡片出队():
+        插件全局变量: G.插件全局变量 = mw.__dict__[G.addonName]
+        复习队列: QueuedCards = 插件全局变量["复习队列"]
+        队首卡片 = 复习队列.cards.pop(0)
+        if 队首卡片.queue == QueuedCards.LEARNING:
+            复习队列.learning_count-=1
+        elif 队首卡片.queue == QueuedCards.REVIEW:
+            复习队列.review_count-=1
+        elif 队首卡片.queue == QueuedCards.NEW:
+            复习队列.new_count-=1
+        tooltip("将复习队列中的队首卡片出队")
 
 
 class EditorOperation:
@@ -235,7 +268,7 @@ class EditorOperation:
         return text
 
     @staticmethod
-    def make_zoterolink(editor: "Editor"):
+    def make_zoterolink(editor: "EditorWebView"):
         clipboard = QApplication.clipboard()
         text = clipboard.text()
         组件工具 = widgets.组件定制
@@ -271,6 +304,8 @@ class CustomProtocol:
 
     @staticmethod
     def set():
+        # hjp-todo 这个功能可以拓展到macos上 https://poe.com/chat/329k8p2v5ixs4hj72r5
+        # https://chat.deepseek.com/a/chat/s/c9dd3219-c2dc-4606-822e-45f5b35d83fc
         root = QSettings("HKEY_CLASSES_ROOT", QSettings.Format.NativeFormat)
         root.beginGroup("ankilink")
         root.setValue("Default", "URL:Ankilink")
@@ -283,6 +318,7 @@ class CustomProtocol:
     @staticmethod
     def exists():
         setting = QSettings(r"HKEY_CLASSES_ROOT\ankilink", QSettings.Format.NativeFormat)
+        # hjp-todo 这个地方需要判断命令的地址是否正确,有些人把anki重装到了其他地方,会失效,所以需要判断anki目前的安装路径
         return len(setting.childGroups()) > 0
 
 
@@ -614,57 +650,83 @@ class MonkeyPatch:
 
         return wrapper
 
+    # @staticmethod
+    # def Reviewer_nextCard(funcs):
+    #     def wrapper(self: "Reviewer"):
+    #         funcs(self)
+    #         cfg = Config.get()
+    #         if cfg.too_fast_warn.value:
+    #             G.nextCard_interval.append(int(datetime.datetime.now().timestamp() * 1000))
+    #             threshold = cfg.too_fast_warn_everycard.value
+    #             tooltip(G.nextCard_interval.__str__())
+    #             if len(G.nextCard_interval) > 1:  # 大于1才有阈值讨论的余地
+    #                 last = G.nextCard_interval[-2]
+    #                 now = G.nextCard_interval[-1]
+    #                 # tooltip(str(now-last))
+    #                 if now - last > cfg.too_fast_warn_interval.value:
+    #                     G.nextCard_interval.clear()
+    #                     return
+    #                 else:
+    #                     if len(G.nextCard_interval) >= threshold:
+    #                         showInfo(Translate.过快提示)
+    #                         G.nextCard_interval.clear()
     @staticmethod
-    def Reviewer_nextCard(funcs):
+    def Reviewer___init__(funcs):
         def wrapper(self: "Reviewer"):
             funcs(self)
-            cfg = Config.get()
-            if cfg.too_fast_warn.value:
-                G.nextCard_interval.append(int(datetime.datetime.now().timestamp() * 1000))
-                threshold = cfg.too_fast_warn_everycard.value
-                tooltip(G.nextCard_interval.__str__())
-                if len(G.nextCard_interval) > 1:  # 大于1才有阈值讨论的余地
-                    last = G.nextCard_interval[-2]
-                    now = G.nextCard_interval[-1]
-                    # tooltip(str(now-last))
-                    if now - last > cfg.too_fast_warn_interval.value:
-                        G.nextCard_interval.clear()
-                        return
-                    else:
-                        if len(G.nextCard_interval) >= threshold:
-                            showInfo(Translate.过快提示)
-                            G.nextCard_interval.clear()
+            showInfo("reviewer start")
 
         return wrapper
 
+
+
     @staticmethod
-    def Reviewer_showEaseButtons(funcs):
-        def freezeAnswerCard(self: Reviewer):
-            _answerCard = self._answerCard
-            self._answerCard = lambda x: tooltip(Translate.已冻结)
-            return _answerCard
+    def Reviewer_answerButtons(funcs) :
+        ankilink = G.src.ankilink
 
-        def recoverAnswerCard(self: Reviewer, _answerCard):
-            self._answerCard = _answerCard
+        def wrapper(self: "Reviewer")-> str:
+            回答按钮 = funcs(self)
+            推迟按钮 = f'''
+            <td align="center">
+                <button title="置后" onclick="javascript:pycmd('{ankilink.protocol}://{ankilink.Cmd.moveToEnd}?{ankilink.Key.card}={self.card.id}')">延后</button>
+            </td>
+            '''
+            # card_id = self.card.id
+            推迟按钮_bs对象 = BeautifulSoup(推迟按钮,"html.parser")
+            回答按钮_bs对象 = BeautifulSoup(回答按钮,"html.parser")
+            first_tr = 回答按钮_bs对象.find('tr')
+            first_tr.append(推迟按钮_bs对象.td)
+            return str(回答按钮_bs对象)
 
-        def _showEaseButtons(self: Reviewer):
-            funcs(self)
-            cfg = Config.get()
-            if cfg.freeze_review.value:
-                interval = cfg.freeze_review_interval.value
-                self.bottom.web.eval("""
-                buttons = document.querySelectorAll("button[data-ease]")
-                buttons.forEach(button=>{button.setAttribute("disabled",true)})
-                setTimeout(()=>{buttons.forEach(button=>button.removeAttribute("disabled"))},
-                """ + str(interval) + """)""")
-
-                self.mw.blockSignals(True)
-                tooltip(Translate.已冻结)
-                _answerCard = freezeAnswerCard(self)
-                QTimer.singleShot(interval, lambda: recoverAnswerCard(self, _answerCard))
-                QTimer.singleShot(interval, lambda: tooltip(Translate.已解冻))
-
-        return _showEaseButtons
+        return wrapper
+    # @staticmethod
+    # def Reviewer_showEaseButtons(funcs):
+    #     # def freezeAnswerCard(self: Reviewer):
+    #     #     _answerCard = self._answerCard
+    #     #     self._answerCard = lambda x: tooltip(Translate.已冻结)
+    #     #     return _answerCard
+    #     #
+    #     # def recoverAnswerCard(self: Reviewer, _answerCard):
+    #     #     self._answerCard = _answerCard
+    #
+    #     def _showEaseButtons(self: Reviewer):
+    #         funcs(self)
+    #         cfg = Config.get()
+    #         if cfg.freeze_review.value:
+    #             interval = cfg.freeze_review_interval.value
+    #             self.bottom.web.eval("""
+    #             buttons = document.querySelectorAll("button[data-ease]")
+    #             buttons.forEach(button=>{button.setAttribute("disabled",true)})
+    #             setTimeout(()=>{buttons.forEach(button=>button.removeAttribute("disabled"))},
+    #             """ + str(interval) + """)""")
+    #
+    #             self.mw.blockSignals(True)
+    #             tooltip(Translate.已冻结)
+    #             _answerCard = freezeAnswerCard(self)
+    #             QTimer.singleShot(interval, lambda: recoverAnswerCard(self, _answerCard))
+    #             QTimer.singleShot(interval, lambda: tooltip(Translate.已解冻))
+    #
+    #     return _showEaseButtons
 
     @staticmethod
     def BrowserSetupMenus(funcs, after, *args, **kwargs):

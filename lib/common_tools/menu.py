@@ -252,6 +252,12 @@ def make__tag_operation(atype, pairsli_admin: "PairsLiAdmin", *args, **kwargs):
 #         make_PDFlink = M.addAction(Translate.插入pdf链接)
 #         make_PDFlink.triggered.connect(lambda: common_tools.funcs.EditorOperation.make_PDFlink(editor))
 
+# def make__卡片延后到末尾(atype, pairsli_admin: "PairsLiAdmin", *args, **kwargs):
+#     if atype in {T.webview}:
+#         view = args[0]
+#         M: "QMenu" = args[1]
+#         make_PDFlink = M.addAction(Translate.插入zotero链接)
+#         make_PDFlink.triggered.connect(lambda:tooltip("make__卡片延后到末尾"))
 def make__插入_zoteroLink(atype, pairsli_admin: "PairsLiAdmin", *args, **kwargs):
     if atype in {T.editor_context}:
         prefix = kwargs["prefix"]
