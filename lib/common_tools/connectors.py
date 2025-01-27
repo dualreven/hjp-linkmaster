@@ -74,7 +74,7 @@ def run():
     ))
 
     # 卡片延后
-    reviewer.Reviewer._answerButtons = funcs.MonkeyPatch.Reviewer_answerButtons(reviewer.Reviewer._answerButtons) # 添加按钮
+    # reviewer.Reviewer._answerButtons = funcs.MonkeyPatch.Reviewer_answerButtons(reviewer.Reviewer._answerButtons) # 添加按钮
     gui_hooks.reviewer_did_init.append(funcs.MainWinOperation.当_reviewer加载完成) # 猴子补丁
     gui_hooks.state_did_change.append(funcs.MainWinOperation.当_窗口状态改变) # 加载复习队列
     gui_hooks.reviewer_did_answer_card.append(lambda a, b,c: funcs.ReviewerOperation.将复习队列中的队首卡片出队()) # 卡片出队

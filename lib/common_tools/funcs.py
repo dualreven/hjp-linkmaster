@@ -227,7 +227,7 @@ class ReviewerOperation:
         队首卡片 = 复习队列.cards.pop(0)
         复习队列.cards.append(队首卡片)
         mw.reviewer.nextCard()
-        tooltip("将复习队列中的队首卡片移动到队尾")
+        tooltip("卡片延后复习")
 
     @staticmethod
     def 将复习队列中的队首卡片出队():
@@ -240,7 +240,7 @@ class ReviewerOperation:
             复习队列.review_count-=1
         elif 队首卡片.queue == QueuedCards.NEW:
             复习队列.new_count-=1
-        tooltip("将复习队列中的队首卡片出队")
+        # tooltip("将复习队列中的队首卡片出队")
 
 
 class EditorOperation:
@@ -268,7 +268,7 @@ class EditorOperation:
         return text
 
     @staticmethod
-    def make_zoterolink(editor: "EditorWebView"):
+    def make_zoterolink(editor_web: "EditorWebView"):
         clipboard = QApplication.clipboard()
         text = clipboard.text()
         组件工具 = widgets.组件定制
@@ -285,15 +285,18 @@ class EditorOperation:
             多媒体数据.setHtml(链接文本)
             clipboard.setMimeData(多媒体数据)
             tooltip(译.zotero链接已获取_请ctrl_v粘贴)
+            QTimer.singleShot(100, lambda: editor_web.onPaste())
+
             对话框.close()
 
         按钮参数 = {
+            译.确定: 组件工具.按钮(文本=Translate.确定, 触发函数=确定触发),
             译.设置zotero默认链接名:组件工具.按钮(文本=译.设置zotero默认链接名, 触发函数=lambda: 表单参数[译.zotero链接名称].setText(译.zotero默认链接名称)),
-            Translate.确定:组件工具.按钮(文本=Translate.确定, 触发函数=确定触发),
+
         }
         表单 = 组件工具.类_表单组件(字典型_表单参数=表单参数)
         按钮组 = 组件工具.类_按钮群(字典型_按钮参数=按钮参数)
-        组件树 = {布局:QVBoxLayout(),子代: [{组件:表单}, {组件:按钮组}]}
+        组件树 = {布局:QVBoxLayout(),子代: [{组件:表单},{组件:按钮组}]}
 
         对话框 = 组件工具.组件组合(组件树,组件工具.对话窗口(标题="zotero link maker"))
         对话框.exec()

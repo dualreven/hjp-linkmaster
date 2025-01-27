@@ -4,9 +4,8 @@ import os
 from .. import G, language
 from ..compatible_import import *
 from anki.scheduler.v3 import QueuedCards
-
-
-
+from PyQt6.QtGui import QClipboard
+from PyQt6.QtTest import QTest
 
 
 译 = language.Translate
